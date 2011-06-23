@@ -4,7 +4,7 @@ class UploadedFilesController < ApplicationController
 
   # Will display all files in the given directory
   def index
-    params[:path] = ['.'] if params[:path].blank?
+    params[:path] = params[:path].blank? ? ['.'] : [params[:path]]
     @path = Pathname.new params[:path].join '/'
     @current_directory = @path.basename.to_s
     @current_directory = 'Root Directory' if @current_directory == '.'
@@ -17,6 +17,7 @@ class UploadedFilesController < ApplicationController
   # Will stream a specific file out. This should only be used if
   # the file does not have a public_path.
   def show
+    params[:path] = params[:path].blank? ? ['.'] : [params[:path]]
     uploaded_file = @storage[Pathname.new params[:path].join '/']
     if uploaded_file
       send_data uploaded_file.stream.read, :filename => uploaded_file.to_s
@@ -29,6 +30,7 @@ class UploadedFilesController < ApplicationController
   # then we assume a directory is being created. If the data is some
   # sort of IO object then we assume a file.
   def create
+    params[:path] = params[:path].blank? ? ['.'] : [params[:path]]
     params[:data] = params[:upload] if params.has_key? :upload # For CKEditor
     if params[:data].respond_to?(:read)
       filename = File.basename(params[:data].original_filename)
@@ -44,6 +46,7 @@ class UploadedFilesController < ApplicationController
 
   # Removes a specific file
   def destroy
+    params[:path] = params[:path].blank? ? ['.'] : [params[:path]]
     @storage.destroy params[:path].join('/')
     redirect_to :back
   end
